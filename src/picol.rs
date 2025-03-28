@@ -67,7 +67,7 @@ impl<'a> PicolParser<'a> {
 
     fn parse_sep(&mut self) -> PicolResult {
         self.start = self.pos;
-        while self.pos < self.len {
+        while self.pos < self.string.len() {
             let c: char = self.string.chars().nth(self.pos).unwrap();
             if c == ' ' || c == '\t' || c == '\n' || c == '\r' {
                 self.pos += 1;
@@ -83,7 +83,7 @@ impl<'a> PicolParser<'a> {
 
     fn parse_eol(&mut self) -> PicolResult {
         self.start = self.pos;
-        while self.pos < self.len {
+        while self.pos < self.string.len() {
             let c: char = self.string.chars().nth(self.pos).unwrap();
             if c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ';' {
                 self.pos += 1;
@@ -115,13 +115,15 @@ impl<'a> PicolParser<'a> {
                 if level == 0 {
                     break;
                 }
-            } else if c == '{' {
-                blevel += 1;
-            } else if c == '}' {
-                blevel -= 1;
             } else if c == '\\' {
                 self.pos += 1;
                 self.len -= 1;
+            } else if c == '{' {
+                blevel += 1;
+            } else if c == '}' {
+                if blevel != 0 {
+                    blevel -= 1;
+                }
             }
             self.pos += 1;
             self.len -= 1;
@@ -149,6 +151,7 @@ impl<'a> PicolParser<'a> {
                 break;
             }
         }
+        /* If its just a single $ char */
         if self.start == self.pos {
             self.start = self.pos-1;
             self.end = self.pos-1;
@@ -172,7 +175,7 @@ impl<'a> PicolParser<'a> {
                 self.len -= 1;
             } else if (self.len == 0 || c == '}') {
                 level -= 1;
-                if level == 0 || self.len == 0{
+                if level == 0 || self.len == 0 {
                     self.end = self.pos-1;
                     if self.len > 0 {
                         // Skip final closed brace
@@ -384,13 +387,13 @@ impl PicolInterpreter {
 
         loop {
             let mut prev_type = &parser.typ.clone();
-            let res = parser.get_token();
+            parser.get_token();
             if parser.typ == PicolType::PTEof {
                 break;
             }
 
             // Get the token as a copy
-            let mut token = parser.string[parser.start..parser.end].to_string();
+            let mut token = parser.string[parser.start..parser.end+1].to_string();
             let tlen = token.len();
 
             if parser.typ == PicolType::PTVar {
