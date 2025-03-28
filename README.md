@@ -17,3 +17,16 @@ proc square {x} {
 
 puts [square 5]
 ```
+
+### Factorial
+
+```Tcl
+proc fact {x} {
+    if {== $x 0} {
+        return 1
+    }
+    return [* [fact [- $x 1]] $x]
+}
+
+puts [fact 5]
+```
