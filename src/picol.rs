@@ -2,7 +2,7 @@
     Implementation of Tcl interpreter in Rust
 */
 
-use std::{collections::HashMap, hash::Hash, marker::PhantomData, process::Command};
+use std::collections::HashMap;
 
 #[derive(Debug, PartialEq)]
 pub enum PicolResult {
