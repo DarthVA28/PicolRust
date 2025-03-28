@@ -147,6 +147,9 @@ impl<'a> PicolParser<'a> {
             if c.is_alphanumeric() || c == '_' {
                 self.pos += 1;
                 self.len -= 1;
+                if self.pos == self.string.len() {
+                    break;
+                }
             } else {
                 break;
             }
@@ -412,6 +415,7 @@ impl PicolInterpreter {
                 if (retcode != PicolResult::PicolOk) {
                     return retcode;
                 }
+                token = self.result.clone();
             } else if parser.typ == PicolType::PTEsc {
                 // XXX: escape handling missing
             } else if parser.typ == PicolType::PTSep {
@@ -529,6 +533,7 @@ fn picol_cmd_set(interpreter : &mut PicolInterpreter, argc : u32, argv : &Vec<St
     if argc != 3 {
         return picol_arrity_error(interpreter, &argv[0]);
     }
+
     interpreter.set_var(&argv[1], &argv[2]);
     interpreter.set_result(&argv[2]);
     return PicolResult::PicolOk;
@@ -576,7 +581,7 @@ fn picol_cmd_while(interpreter : &mut PicolInterpreter, argc : u32, argv : &Vec<
                 continue;
             } else if (retcode == PicolResult::PicolBreak) {
                 return PicolResult::PicolOk;
-            } else if (retcode != PicolResult::PicolOk) {
+            } else if (retcode == PicolResult::PicolOk) {
                 continue;
             } else {
                 return retcode;
